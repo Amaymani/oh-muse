@@ -18,6 +18,8 @@ export default function profile() {
     setMounted(true);
   }, []);
 
+  if (!mounted) return null;
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -52,7 +54,7 @@ export default function profile() {
           <div className="pl-3 my-5">bioooo....</div>
           <Link
             href={"/edit-profile"}
-            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5"
+            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5 mx-2"
           >
             Edit Profile
           </Link>

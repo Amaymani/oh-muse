@@ -73,7 +73,7 @@ const CreatePost = () => {
           <div className="mt-3 ml-5 text-lg font-semibold">
             Make your P<span className="text-purp">oh</span>st
           </div>
-          <div className="flex justify-center">
+          <div className= "flex justify-center">
             <textarea
               name="post"
               onChange={handlePostChange}
