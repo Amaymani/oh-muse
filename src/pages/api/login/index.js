@@ -8,7 +8,7 @@ export default async function POST(req, res) {
         await connectDB();
         const existingUser = await User.findOne({ email:email });
         if(existingUser === null){
-            return await res.status(401).json({ message: "Invalid credentials" });
+            return await res.status(401).json({ message: "User not found" });
         } else{
             const isPasswordValid = await bcrypt.compare(password, existingUser.password);
             if (!isPasswordValid) {

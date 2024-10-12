@@ -19,7 +19,7 @@ export default NextAuth({
 
         try {
           const user = await User.findOne({ email: email });
-
+          
           if (!user) {
             console.log('No user found with this email');
             throw new Error('No user found with this email');
@@ -31,7 +31,7 @@ export default NextAuth({
             throw new Error('Invalid password');
           }
           console.log("User authenticated:", user.email);
-          return {id:user._id, email: user.email, username:user.username || null };  // Return user object if credentials are valid
+          return {id:user._id, email: user.email, username:user.username || null };
         } catch (error) {
           console.error('Error in authorize function:', error);
           return null;

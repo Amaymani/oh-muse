@@ -3,14 +3,14 @@ import Link from "next/link"
 import { useTheme } from "next-themes"
 import { useState, useEffect } from "react"
 import Brand from "./Brand"
-import { useWindowSize, useWindowWidth, useWindowHeight} from '@react-hook/window-size/throttled'
+import { useWindowWidth} from '@react-hook/window-size/throttled'
 
 
 const Navbar = () => {
   const {systemTheme, theme, setTheme}= useTheme();
   const [mounted, setMounted]=useState(false);
   const onlyWidth = useWindowWidth();
-  console.log(onlyWidth)
+
 
   useEffect(() => {
     setMounted(true);

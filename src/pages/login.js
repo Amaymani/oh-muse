@@ -7,8 +7,6 @@ import AuthArt from '@/components/AuthArt';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { signIn, useSession } from 'next-auth/react';
-import authOptions from '@/pages/api/auth/[...nextauth]'
-import { getServerSession } from "next-auth";
 
 
 
