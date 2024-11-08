@@ -20,7 +20,7 @@ const Navbar = () => {
   const currentTheme = theme === 'system' ? systemTheme : theme;
 
   return (
-    <div className="fixed sm:sticky right-0 justify-end items-center flex flex-col-reverse sm:flex-row bottom-0 sm:top-0 ">
+    <div className="fixed sm:sticky right-0 justify-end items-center flex flex-col-reverse sm:flex-row bottom-0 sm:top-0 z-10">
       {onlyWidth>639?<Brand/>:""}
       {/* Main navbar */}
         <nav className="flex my-5 pl-7 sm:pl-0 w-auto sm:w-[70%] rounded-tl-full rounded-bl-full bg-purp  items-center py-2">
