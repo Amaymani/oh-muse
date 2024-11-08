@@ -2,6 +2,7 @@ import connectDB from "@/lib/dbConnect";
 import User from "@/lib/models/user";
 import bcrypt from 'bcryptjs';
 
+
 export default async function POST(req, res) {
     try{
         const {email, password} = await req.body;

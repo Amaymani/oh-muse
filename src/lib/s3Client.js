@@ -8,7 +8,7 @@ const s3Client = new S3Client({
         secretAccessKey: process.env.SECRET_ACCESS_KEY,
     }
 });
-
+ 
 async function getObjectURL(key) {
     try {
         const command = new GetObjectCommand({

@@ -4,7 +4,6 @@ import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { getObjectURL } from "@/lib/s3Client";
 
 const editProfile = () => {
   const [image, setImage] = useState(null);
