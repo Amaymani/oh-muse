@@ -23,38 +23,51 @@ const CreatePost = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("file", file);
+    if (file) {
+      formData.append("file", file);
+    }
     formData.append("post", post);
-    const timestamp = new Date().getTime().toString(); // Get a timestamp for the filename
+
     try {
-      const res = await axios.get("/api/create-a-post", {
-        params: {
-          filename: timestamp,
-          filetype: file.type,
-          username: session.user.username,
-        },
-      });
-      const { url } = await res.data;
-      try {
-        const res = await axios.put(url, file, {
-          headers: {
-            "Content-Type": file.type,
+      let filename = null;
+
+      if (file) {
+        const timestamp = new Date().getTime().toString(); // Get a timestamp for the filename
+        filename = timestamp;
+
+        // Request a signed URL for file upload
+        const res = await axios.get("/api/create-a-post", {
+          params: {
+            filename: timestamp,
+            filetype: file.type,
+            username: session.user.username,
           },
         });
-      } catch (uploadError) {
-        console.error(
-          "File upload error:",
-          uploadError.response?.data?.error || uploadError.message
-        );
-        return;
+        const { url } = await res.data;
+
+        // Upload the file to the signed URL
+        try {
+          await axios.put(url, file, {
+            headers: {
+              "Content-Type": file.type,
+            },
+          });
+        } catch (uploadError) {
+          console.error(
+            "File upload error:",
+            uploadError.response?.data?.error || uploadError.message
+          );
+          return;
+        }
       }
 
+      // Create the post with or without the file
       const postResponse = await axios.post("/api/create-a-post", {
         post,
-        filename: timestamp,
-        username: await session.user.username,
+        filename,
+        username: session.user.username,
         headers: {
-          username: await session.user.username,
+          username: session.user.username,
         },
       });
 
@@ -62,9 +75,10 @@ const CreatePost = () => {
         router.push("/");
       }
     } catch (err) {
-      console.error("Upload error:", err.response?.data?.error || err.message);
+      console.error("Error:", err.response?.data?.error || err.message);
     }
   };
+
   return (
     <div>
       <Navbar />
@@ -73,13 +87,13 @@ const CreatePost = () => {
           <div className="mt-3 ml-5 text-lg font-semibold">
             Make your P<span className="text-purp">oh</span>st
           </div>
-          <div className= "flex justify-center">
+          <div className="flex justify-center">
             <textarea
               name="post"
               onChange={handlePostChange}
               value={post}
               placeholder="Write your Pohst ohnomusely here..."
-              className=" w-[80%] h-[6rem] mx-5 p-3 mt-3 border-b-2 border-gray-300  resize-none"
+              className="w-[80%] h-[6rem] mx-5 p-3 mt-3 border-b-2 border-gray-300 resize-none"
             ></textarea>
           </div>
           <input name="file" type="file" onChange={handleFileChange} />

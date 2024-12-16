@@ -1,49 +1,55 @@
 import connectDB from "@/lib/dbConnect";
 import Post from "@/lib/models/post";
-import { ObjectId } from "mongodb";
 import { getObjectURL } from "@/lib/s3Client";
 
 export default async function handler(req, res) {
-    if (req.method !== "GET") {
-        return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const { username, page = 1 } = req.query; // Default page is 1
+    console.log(`Fetching posts for ${username} on page ${page}`);
+
+    if (!username) {
+      return res.status(400).json({ message: "Username not fetched to backend from client" });
     }
 
-    try {
-        const { username } = req.query;
-        console.log(username + "-------------------")
+    await connectDB();
 
-        // Check if required parameters are provided and valid
-        if (!username) {
-            return res.status(400).json({ message: "Username not fetched to backend from client" });
+    const pageSize = 4; // Number of posts per page
+    const skip = (parseInt(page) - 1) * pageSize;
+
+    // Fetch posts with pagination
+    const posts = await Post.find({ user: username })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(pageSize);
+
+    // Generate signed URLs for posts with S3 keys
+    const postsWithSignedUrls = await Promise.all(
+      posts.map(async (post) => {
+        if (post.images3key) {
+          const signedUrl = await getObjectURL(post.images3key);
+          return {
+            ...post.toObject(),
+            imageUrl: signedUrl,
+          };
+        } else {
+          return {
+            ...post.toObject(),
+            imageUrl: null,
+          };
         }
+      })
+    );
 
-        await connectDB();
-
-        // Query for posts using lastPostId (cast it to ObjectId)
-        const posts = await Post.find({ user: username })
-            .sort({ createdAt: -1 }) // Sort in descending order to get the latest posts first
-            .limit(20); // Adjust limit as needed
-        
-
-        const postsWithSignedUrls = await Promise.all(
-            posts.map(async (post) => {
-                const signedUrl = await getObjectURL(post.images3key); // getObjectURL generates the signed URL
-                return {
-                    ...post.toObject(),
-                    imageUrl: signedUrl, // Include the signed URL in the response
-                };
-            })
-        );
-
-        if (postsWithSignedUrls.length === 0) {
-            return res.status(404).json({ message: "No more posts" });
-          }
-
-        return res.status(200).json({
-            posts: postsWithSignedUrls,
-        });
-    } catch (error) {
-        console.error("Error fetching posts:", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    return res.status(200).json({
+      posts: postsWithSignedUrls,
+      hasMore: postsWithSignedUrls.length === pageSize, // If posts fetched are less than `pageSize`, no more pages exist
+    });
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
