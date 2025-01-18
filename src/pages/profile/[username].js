@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useWindowWidth } from '@react-hook/window-size/throttled';
 import Image from "next/image";
@@ -56,9 +55,7 @@ const ProfilePage = ({ initialProfile, initialPosts, initialHasMore }) => {
                             src={userProfile.profileImg || "/pfp.webp"}
                             alt=""
                             fill
-                            sizes="(max-width: 768px) 100vw, 
-         (max-width: 1200px) 50vw, 
-         33vw"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             placeholder="blur"
                             blurDataURL="/pfp.webp"
                             style={{ objectFit: "cover" }}
@@ -91,7 +88,7 @@ const ProfilePage = ({ initialProfile, initialPosts, initialHasMore }) => {
             <div className="parent w-full flex justify-evenly  ">
 
                 {/* <PostsComp posts={posts}/> */}
-                <div className="child-posts">
+                <div className="child-posts w-full sm:w-[50%]">
                     <InfiniteScroll
                         className=""
                         dataLength={posts.length}
@@ -107,7 +104,7 @@ const ProfilePage = ({ initialProfile, initialPosts, initialHasMore }) => {
                         {posts.map((post) => (
                             <div
                                 key={post._id}
-                                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp  flex flex-col justify-center sm:max-w-[70%] md:max-w-[60%] max-w-full items-start overflow-hidden"
+                                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp  flex flex-col justify-center items-start overflow-hidden"
                             >
 
 
@@ -181,7 +178,7 @@ export async function getServerSideProps(context) {
         const baseURL = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
         const profileRes = await axios.get(`${baseURL}/api/profile`, {
-            params: { username },
+            params: { username, reqType:"profile" },
         });
         console.log(username+"-----------------------------")
 

@@ -36,14 +36,19 @@ const userSchema = new Schema(
     },
     followers:{
       type:[String]
+    },
+    communities:{
+      type:[Schema.Types.ObjectId],
+      ref: "Community"
     }
+    
   },
   {
     timestamps: true,
   }
 );
 
-userSchema.index({ username: 1 });
+userSchema.index({ username: 1 },{ name: 'username_index' });
 
 const User = mongoose.models?.User || mongoose.model("User", userSchema);
 

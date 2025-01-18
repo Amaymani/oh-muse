@@ -4,11 +4,16 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+
 const CreatePost = () => {
+
+    const router = useRouter();
   const [file, setFile] = useState(null);
   const [post, setPost] = useState("");
+  const { community_id } = router.query;
+  
 
-  const router = useRouter();
+
   const { data: session, status } = useSession();
 
   const handleFileChange = (e) => {
@@ -41,6 +46,7 @@ const CreatePost = () => {
             filename: timestamp,
             filetype: file.type,
             username: session.user.username,
+            
           },
         });
         const { url } = await res.data;
@@ -66,6 +72,7 @@ const CreatePost = () => {
         post,
         filename,
         username: session.user.username,
+        community_id: community_id,
         headers: {
           username: session.user.username,
         },
@@ -85,7 +92,7 @@ const CreatePost = () => {
       <div className="flex flex-col justify-center ">
         <form onSubmit={handleSubmit}>
           <div className="mt-3 ml-5 text-lg font-semibold">
-            Make your P<span className="text-purp">oh</span>st
+            Post on c<span className="text-purp">/oh</span>mmunity
           </div>
           <div className="flex justify-center">
             <textarea

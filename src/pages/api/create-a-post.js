@@ -5,7 +5,7 @@ import Post from "@/lib/models/post";
 export default async function handler(req, res) {
   if (req.method === "GET") {
     const { filename, filetype, username } = req.query;
- 
+
     try {
       const url = await putObject(username, filename, filetype);
 
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         .json({ error: "Error generating pre-signed URL." });
     }
   } else if (req.method === "POST") {
-    const { post, filename, username } = req.body;
+    const { post, filename, username, community_id } = req.body;
 
     if (!post || !username) {
       return res.status(400).json({ error: "Missing required fields." });
@@ -34,7 +34,8 @@ export default async function handler(req, res) {
       const newPost = {
         user: username,
         text: post,
-        ...(imageK && { images3key: imageK }), // Add images3key only if imageK exists
+        ...(imageK && { images3key: imageK }),
+        communityid: community_id // Add images3key only if imageK exists
       };
 
       console.log("New Post Object:", newPost);
@@ -57,7 +58,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to create post." });
     }
   } else {
-    // Handle any other HTTP method
     res.setHeader("Allow", ["GET", "POST"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }

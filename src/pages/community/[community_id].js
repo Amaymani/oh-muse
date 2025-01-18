@@ -1,64 +1,89 @@
-import React, { useEffect, useState } from "react";
-import { useSession, signOut, getSession } from "next-auth/react";
-import Navbar from "@/components/Navbar";
-import { useRouter } from "next/router";
-import Link from "next/link";
+import { useRouter } from 'next/router'
+import { use, useEffect, useState } from 'react'
+import axios from 'axios';
+import Navbar from '@/components/Navbar';
 import { useWindowWidth } from '@react-hook/window-size/throttled';
-import Image from "next/image";
-import axios from "axios";
+import Image from 'next/image';
 import InfiniteScroll from "react-infinite-scroll-component";
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
 
-export default function Profile({ initialProfile, initialPosts, initialHasMore }) {
   const Router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const onlyWidth = useWindowWidth();
-  const { data: session, status } = useSession();
-  const loading = status === "loading";
-  const [userProfile, setProfile] = useState(initialProfile);
+  const { community_id } = Router.query;
+  const [communityData, setCommunityData] = useState(initialCommunity);
   const [posts, setPosts] = useState(initialPosts);
+  const onlyWidth = useWindowWidth();
   const [page, setPage] = useState(2);
   const [hasMore, setHasMore] = useState(initialHasMore);
-  
+  const { data: session, status } = useSession();
+  const loading = status === "loading";
+  const [joinedStatus, setJoinedStatus] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setIsHydrated(true);
 
-  if (!mounted) return null;
+    if (!isHydrated || status === "loading" || !communityData?.existingCom?.members || !session?.user?.id) {
+      return; // Do nothing if not hydrated or loading, it is giving error upon the rendering of the page
+    }
 
-  if (loading) {
-    return <div>Loading...</div>;
+    const checkIfUserIsMember =() => {
+      const isMember = communityData.existingCom.members.includes(session.user.id);
+      
+      isMember ? setJoinedStatus("Joined") : setJoinedStatus("Join");
+      return isMember;
+    };
+
+    checkIfUserIsMember();
+  }, [isHydrated, status,communityData, session?.user?._id, joinedStatus]);
+
+  if (!isHydrated) {
+    return <div>loading...</div>;
   }
 
-  if (!session || !session.user) {
-    Router.push("/login");
-    
+
+
+    if (!loading && (!session || !session.user)) {
+      Router.push("/login");
+    }
+
+  const joinCommunity = async (e) => {
+    e.preventDefault();
+    try {   
+      const response = await axios.post(`/api/join-community`,
+        {
+        user_id: session.user.id,
+          community_id: community_id,
+          reqType: "join"
+        });
+    }
+    catch (error) {
+      console.error("Error joining community:", error);
+
+    }
   }
 
   const fetchMorePosts = async () => {
     try {
-      if (!session?.user?.username) {
-        console.error("No username found in session.");
-        return;
-      }
+      
       const response = await axios.get(`/api/fetch-posts`, {
-        params: { username: session.user.username, page },
+        params: { username: username, page },
       });
 
       const newPosts = response.data.posts;
       setPosts((prevPosts) => [...prevPosts, ...newPosts]);
       setPage((prevPage) => prevPage + 1);
       setHasMore(response.data.hasMore);
+      console.log(communityData.existingCom.members.includes(userid))
     } catch (error) {
       console.error("Error fetching more posts:", error);
     }
   };
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/login" });
-  };
-
   return (
-    <>
+    <div>
+
       <Navbar />
       <div className="flex justify-center items-center w-full">
         <div className="flex flex-col justify-center items-center w-[50%]">
@@ -66,47 +91,37 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
             <Image
               priority
               quality={5}
-              src={userProfile.profileImg || "/pfp.webp"}
+              src={communityData.communityImgUrl || "/pfp.webp"}
               alt=""
               fill
-              sizes="(max-width: 768px) 100vw, 
-         (max-width: 1200px) 50vw, 
-         33vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               placeholder="blur"
               blurDataURL="/pfp.webp"
               style={{ objectFit: "cover" }}
-              className="profile-image rounded-full"
+              className="community-image rounded-full"
             />
           </div>
-          <div className="username py-2">{session.user.username}</div>
+          <div className="username py-2 mb-3 font-semibold text-lg">{communityData.existingCom.communityName}</div>
+          <button onClick={joinCommunity} className='px-6 py-3 bg-purp mb-5 rounded-full text-xl hover:bg-purple-700 duration-200 transition-colors group'><i className="fa-regular fa-square-plus group-hover:text-yell pr-2 duration-200 transition-colors"></i>{joinedStatus}</button>
         </div>
         <div className="flex flex-col w-[50%]">
-          <div className="flex justify-evenly mt-10">
-            <div className="flex flex-col justify-center items-center">
-              <div className="font-semibold">100</div>
-              <div>Follower</div>
-            </div>
-            <div className="flex flex-col justify-center items-center">
-              <div className="font-semibold">10000</div>
-              <div>Following</div>
-            </div>
-          </div>
+
           <div className="pl-3 my-5">
-            Bio:<br />
-            {userProfile.bio}
+            <div className='text-sm font-semibold  '>
+              Members: {communityData.existingCom.members.length}
+            </div>
+            <br />
+            Description:<br />
+            <div className='mt-2'>{communityData.existingCom.desc}</div>
           </div>
-          <Link
-            href={"/edit-profile"}
-            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5 mx-2"
-          >
-            Edit Profile
-          </Link>
         </div>
       </div>
 
       <hr className="border-purp" />
 
-
+      <div className='flex justify-center items-center w-full mt-5'>
+        <Link href={`${community_id}/create-community-post`} className='px-4 py-3 bg-purp rounded-full font-semibold flex justify-center items-center'><i className="fa-solid fa-plus text-2xl pr-2"></i>Create Post</Link>
+      </div>
       <div className="parent w-full  flex justify-evenly  ">
 
         {/* <PostsComp posts={posts}/> */}
@@ -131,7 +146,7 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
 
 
                 <div className="post-header flex  w-full relative mb-2">
-                  <div className="post-username font-semibold w-full"><span className="text-purp">oh/</span>{session.user.username}</div>
+                  <div className="post-username font-semibold w-full"><span className="text-purp">oh/</span>{post.user}</div>
                   <p className="post-timestamp text-sm pb-5 absolute right-0">
                     {new Date(post.createdAt).toLocaleString().slice(0, 10)}
                   </p>
@@ -147,8 +162,8 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
                       alt="Post"
                       fill
                       sizes="(max-width: 768px) 100vw, 
-           (max-width: 1200px) 80vw, 
-           70vw"
+                       (max-width: 1200px) 80vw, 
+                       70vw"
                       placeholder="blur"
                       style={{
                         objectFit: "contain",
@@ -182,45 +197,40 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
         {onlyWidth > 1023 ? <div className="child-trending w-[30rem] bg-zinc-900 mt-5 rounded-3xl">
           <div className="text-xl p-4 pl-6 font-semibold">Trending Section</div>
           <hr className="border-purp"></hr>
-          <div className='flex justify-center items-center text-xl my-20'><i className="fa-solid fa-code text-2xl text-purp mr-5"></i><div>Explore page<br/>under construction</div></div>
+          <div className='flex justify-center items-center text-xl my-20'><i className="fa-solid fa-code text-2xl text-purp mr-5"></i><div>Explore page<br />under construction</div></div>
 
         </div> : ""}
 
       </div>
 
-      <button onClick={handleLogout} className="p-4 bg-purp rounded-full m-5">
-        logout
-      </button>
-    </>
-  );
+    </div>
+  )
 }
+
+export default CommunityPage
 
 export async function getServerSideProps(context) {
   try {
-    const session = await getSession(context);
-    if (!session) {
-      return {
-        redirect: {
-          destination: "/login",
-          permanent: false,
-        },
-      };
-    }
 
-    const username = session.user.username;
+
+
+    const { community_id } = context.query;
+
     const baseURL = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
-    const profileRes = await axios.get(`${baseURL}/api/profile`, {
-      params: { username },
+    const communityRes = await axios.get(`${baseURL}/api/community`, {
+      params: { community_id },
     });
 
+
+
     const postsRes = await axios.get(`${baseURL}/api/fetch-posts`, {
-      params: { username, page: 1 },
+      params: { page: 1, reqType: "community", community_id: community_id },
     });
 
     return {
       props: {
-        initialProfile: profileRes.data,
+        initialCommunity: communityRes.data,
         initialPosts: postsRes.data.posts,
         initialHasMore: postsRes.data.hasMore,
       },
@@ -229,7 +239,7 @@ export async function getServerSideProps(context) {
     console.error("Error fetching data:", error);
     return {
       props: {
-        initialProfile: { img: "", bio: "" },
+        initialCommunity: { img: "", bio: "" },
         initialPosts: [],
         initialHasMore: false,
       },

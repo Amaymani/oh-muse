@@ -1,11 +1,11 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-const postSchema= new Schema({
-    _id:{
+const postSchema = new Schema({
+    _id: {
         type: Schema.Types.ObjectId,
         default: () => new Types.ObjectId(),
     },
-    user:{
+    user: {
         type: String,
         required: true,
     },
@@ -17,10 +17,14 @@ const postSchema= new Schema({
         type: String,
         required: false
     },
+    communityid: {
+        type: Schema.Types.ObjectId,
+        ref: 'Community',
+    }
 },
-{
-    timestamps: true,
-  }
+    {
+        timestamps: true,
+    }
 );
 
 const Post = mongoose.models?.Post || mongoose.model("Post", postSchema);

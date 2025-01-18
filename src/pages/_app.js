@@ -15,7 +15,6 @@ export default function App({ Component, pageProps:{ session, ...pageProps } }) 
   }, []);
   
   
-
   return (
   <ThemeProvider attribute="class">
     <Head>
