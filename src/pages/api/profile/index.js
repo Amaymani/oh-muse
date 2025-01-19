@@ -25,10 +25,13 @@ export default async function handler(req, res) {
             : "";
 
         return res.status(200).json({
+            id:existingUser._id,
             username: existingUser.username,
             email: existingUser.email,
             profileImg: profileImgUrl,
             bio: existingUser.bio,
+            followers: existingUser.followers,
+            following: existingUser.following,
         });
     } catch (error) {
         console.error(error);

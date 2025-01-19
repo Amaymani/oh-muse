@@ -7,8 +7,9 @@ import { useWindowWidth } from '@react-hook/window-size/throttled';
 import Image from "next/image";
 import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
+import FollowerModel from "@/components/FollowerModel";
 
-export default function Profile({ initialProfile, initialPosts, initialHasMore }) {
+export default function Profile({ followers, initialProfile, initialPosts, initialHasMore }) {
   const Router = useRouter();
   const [mounted, setMounted] = useState(false);
   const onlyWidth = useWindowWidth();
@@ -17,8 +18,12 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
   const [userProfile, setProfile] = useState(initialProfile);
   const [posts, setPosts] = useState(initialPosts);
   const [page, setPage] = useState(2);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasMore, setHasMore] = useState(initialHasMore);
-  
+  const [dropdownOpenPostId, setDropdownOpenPostId] = useState(null);
+  const [followersAndfollowing, setFollowersAndFollowing] = useState([]);
+  const [followReqType, setFollowReqType] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -31,7 +36,42 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
 
   if (!session || !session.user) {
     Router.push("/login");
-    
+  }
+
+  const openModal = (reqType) => {
+    setIsModalOpen(true);
+    fetchFollowersAndFollowing(reqType);
+};
+
+const closeModal = () => {
+    setIsModalOpen(false);
+};
+
+  const toggleDropdown = (postId) => {
+    setDropdownOpenPostId((prev) => (prev === postId ? null : postId));
+  };
+
+  const deletePost = async (postId) => {
+    try {
+      await axios.delete(`/api/delete-post`, { data: { postId } });
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+      setDropdownOpenPostId(null);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
+  const fetchFollowersAndFollowing = async (reqType) => {
+    try {
+      
+      const response = await axios.get(`/api/fetch-followers-following`, {
+        params: { username: session.user.username, reqType: reqType },
+      });
+      console.log(response.data.detail);
+      setFollowersAndFollowing(response.data.detail)
+    } catch (error) {
+      console.error("Error fetching followers and following:", error);
+    }
   }
 
   const fetchMorePosts = async () => {
@@ -41,7 +81,7 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
         return;
       }
       const response = await axios.get(`/api/fetch-posts`, {
-        params: { username: session.user.username, page },
+        params: { username: session.user.username, page, reqType: "profile" },
       });
 
       const newPosts = response.data.posts;
@@ -58,7 +98,7 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
   };
 
   return (
-    <>
+    <div>
       <Navbar />
       <div className="flex justify-center items-center w-full">
         <div className="flex flex-col justify-center items-center w-[50%]">
@@ -82,12 +122,12 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
         </div>
         <div className="flex flex-col w-[50%]">
           <div className="flex justify-evenly mt-10">
-            <div className="flex flex-col justify-center items-center">
-              <div className="font-semibold">100</div>
+            <div onClick={()=>{openModal("followers")}} className="flex flex-col justify-center items-center">
+              <div className="font-semibold">{userProfile.followers.length}</div>
               <div>Follower</div>
             </div>
-            <div className="flex flex-col justify-center items-center">
-              <div className="font-semibold">10000</div>
+            <div onClick={()=>{openModal("following")}} className="flex flex-col justify-center items-center">
+              <div className="font-semibold">{userProfile.following.length}</div>
               <div>Following</div>
             </div>
           </div>
@@ -132,10 +172,30 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
 
                 <div className="post-header flex  w-full relative mb-2">
                   <div className="post-username font-semibold w-full"><span className="text-purp">oh/</span>{session.user.username}</div>
+                  
                   <p className="post-timestamp text-sm pb-5 absolute right-0">
+
+
+
+
                     {new Date(post.createdAt).toLocaleString().slice(0, 10)}
+                    <i onClick={() => toggleDropdown(post._id)}
+                      className="fa-solid fa-ellipsis-vertical px-2 text-xl cursor-pointer"
+                    ></i>
+                    {dropdownOpenPostId === post._id && (
+                      <ul className="dropdown-menu bg-zinc-800 rounded-md shadow-lg absolute right-0 mt-2 z-10">
+                        <li
+                          className="dropdown-item px-4 py-2 hover:bg-zinc-700 cursor-pointer"
+                          onClick={() => deletePost(post._id)}
+                        >
+                          Delete Post
+                        </li>
+                      </ul>
+                    )}
                   </p>
                 </div>
+
+                {post.communityid && (<div className="mb-5"><Link href={`/community/${post.communityid}`} className="text-purp font-extrabold">C/ohmmunity Post - View c/ohmmunity</Link></div>)}
 
 
                 {post.imageUrl && (
@@ -143,7 +203,7 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
                     <Image
                       src={post.imageUrl}
                       quality={30}
-                      blurDataURL="/post-loader.gif"
+                      blurDataURL="/loader.gif"
                       alt="Post"
                       fill
                       sizes="(max-width: 768px) 100vw, 
@@ -154,7 +214,7 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
                         objectFit: "contain",
 
                       }}
-                      className="post-image"
+                      className="post-image z-0"
                     />
                   </div>
                 )}
@@ -178,11 +238,12 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
           </InfiniteScroll>
 
         </div>
+        
 
         {onlyWidth > 1023 ? <div className="child-trending w-[30rem] bg-zinc-900 mt-5 rounded-3xl">
           <div className="text-xl p-4 pl-6 font-semibold">Trending Section</div>
           <hr className="border-purp"></hr>
-          <div className='flex justify-center items-center text-xl my-20'><i className="fa-solid fa-code text-2xl text-purp mr-5"></i><div>Explore page<br/>under construction</div></div>
+          <div className='flex justify-center items-center text-xl my-20'><i className="fa-solid fa-code text-2xl text-purp mr-5"></i><div>Explore page<br />under construction</div></div>
 
         </div> : ""}
 
@@ -191,7 +252,10 @@ export default function Profile({ initialProfile, initialPosts, initialHasMore }
       <button onClick={handleLogout} className="p-4 bg-purp rounded-full m-5">
         logout
       </button>
-    </>
+      {isModalOpen && (
+                <FollowerModel followers={followersAndfollowing} type={fetchFollowersAndFollowing} onClose={closeModal} />
+            )}
+    </div>
   );
 }
 
@@ -215,7 +279,7 @@ export async function getServerSideProps(context) {
     });
 
     const postsRes = await axios.get(`${baseURL}/api/fetch-posts`, {
-      params: { username, page: 1 },
+      params: { username, page: 1, reqType: "profile" },
     });
 
     return {
