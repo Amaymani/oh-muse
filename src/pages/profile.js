@@ -38,9 +38,9 @@ export default function Profile({ followers, initialProfile, initialPosts, initi
     Router.push("/login");
   }
 
-  const openModal = (reqType) => {
+  const openModal = (params) => {
     setIsModalOpen(true);
-    fetchFollowersAndFollowing(reqType);
+    fetchFollowersAndFollowing(params);
 };
 
 const closeModal = () => {
@@ -61,13 +61,14 @@ const closeModal = () => {
     }
   };
 
-  const fetchFollowersAndFollowing = async (reqType) => {
+  const fetchFollowersAndFollowing = async (params) => {
     try {
       
       const response = await axios.get(`/api/fetch-followers-following`, {
-        params: { username: session.user.username, reqType: reqType },
+        params: { username: params.username, reqType: params.reqType },
       });
-      console.log(response.data.detail);
+
+      console.log(params.username);
       setFollowersAndFollowing(response.data.detail)
     } catch (error) {
       console.error("Error fetching followers and following:", error);
@@ -122,11 +123,11 @@ const closeModal = () => {
         </div>
         <div className="flex flex-col w-[50%]">
           <div className="flex justify-evenly mt-10">
-            <div onClick={()=>{openModal("followers")}} className="flex flex-col justify-center items-center">
+            <div onClick={()=>{openModal({reqType:"followers",username:userProfile.username})}} className="flex flex-col justify-center items-center">
               <div className="font-semibold">{userProfile.followers.length}</div>
               <div>Follower</div>
             </div>
-            <div onClick={()=>{openModal("following")}} className="flex flex-col justify-center items-center">
+            <div onClick={()=>{openModal({reqType:"following",username:userProfile.username})}} className="flex flex-col justify-center items-center">
               <div className="font-semibold">{userProfile.following.length}</div>
               <div>Following</div>
             </div>

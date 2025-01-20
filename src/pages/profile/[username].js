@@ -24,14 +24,16 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [followStatus, setFollowStatus] = useState(false);
     const [userData, setUserData] = useState(sessionUserData);
+    const [followersAndfollowing, setFollowersAndFollowing] = useState([]);
     const [followReqType, setFollowReqType] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const openModal = () => {
+    const openModal = (params) => {
         setIsModalOpen(true);
+        fetchFollowersAndFollowing(params);
     };
 
     const closeModal = () => {
@@ -51,12 +53,29 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
 
     }
 
+
+
     useEffect(() => {  
         checkFollow(); 
     }, [userData]);
 
 
     if (!mounted) return null;
+
+
+    const fetchFollowersAndFollowing = async (params) => {
+        try {
+            console.log(params)
+          
+          const response = await axios.get(`/api/fetch-followers-following`, {
+            params: { username: params.username, reqType: params.reqType },
+          });
+          console.log(response.data.detail);
+          setFollowersAndFollowing(response.data.detail)
+        } catch (error) {
+          console.error("Error fetching followers and following:", error);
+        }
+      }
 
 
 
@@ -86,7 +105,7 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
             });
 
             setUserData(response.data.User);
-
+            
         } catch (error) {
             console.error("Error following user:", error);
         }
@@ -121,11 +140,11 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
                 </div>
                 <div className="flex flex-col w-[50%]">
                     <div className="flex justify-evenly mt-10">
-                        <div onClick={openModal} className="flex flex-col justify-center items-center">
+                        <div onClick={()=>{openModal({reqType:"following",username:userProfile.username})}} className="flex flex-col justify-center items-center">
                             <div className="font-semibold">{userProfile.followers.length}</div>
                             <div>Follower</div>
                         </div>
-                        <div className="flex flex-col justify-center items-center">
+                        <div onClick={()=>{openModal({reqType:"following",username:userProfile.username})}} className="flex flex-col justify-center items-center">
                             <div className="font-semibold">{userProfile.following.length}</div>
                             <div>Following</div>
                         </div>
@@ -180,7 +199,7 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
                                         <Image
                                             src={post.imageUrl}
                                             quality={30}
-                                            blurDataURL="/post-loader.gif"
+                                            blurDataURL="/loader.gif"
                                             alt="Post"
                                             fill
                                             sizes="(max-width: 768px) 100vw, 
@@ -225,7 +244,7 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
 
             </div>
             {isModalOpen && (
-                <FollowerModel followers={followers} onClose={closeModal} />
+                <FollowerModel followers={followersAndfollowing} type={fetchFollowersAndFollowing} onClose={closeModal} />
             )}
 
         </div>);

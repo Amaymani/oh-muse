@@ -21,9 +21,11 @@ export default async function fetchFollowersFollowing (req, res) {
 
         if (reqType === "followers") {
             const followersDetails = await User.find(
-                { _id: { $in: followers } }, // Match all _id's in the followers array
-                { username: 1, _id: 1 }       // Select only the username and _id fields
+                { _id: { $in: followers } }, 
+                { username: 1, _id: 1 }       
             );
+
+            console.log(followersDetails)
 
             if (!followersDetails) {
                 return res.status(404).json({ message: "User not found" });
@@ -33,8 +35,8 @@ export default async function fetchFollowersFollowing (req, res) {
             });
         } else if (reqType === "following") {
             const followingDetails = await User.find(
-                { _id: { $in: following } }, // Match all _id's in the followers array
-                { username: 1, _id: 1 }       // Select only the username and _id fields
+                { _id: { $in: following } }, 
+                { username: 1, _id: 1 }      
             );
 
             if (!followingDetails) {
