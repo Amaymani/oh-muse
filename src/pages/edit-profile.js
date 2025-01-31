@@ -54,6 +54,8 @@ const editProfile = () => {
             "Content-Type": image.type,  // Changed `file` to `image`
           },
         });
+
+      router.push("/profile");
       } catch (uploadError) {
         console.error(
           "File upload error:",

@@ -79,7 +79,7 @@ const CreatePost = () => {
       });
 
       if (postResponse.status === 201) {
-        router.push("/");
+        router.push("/profile");
       }
     } catch (err) {
       console.error("Error:", err.response?.data?.error || err.message);
