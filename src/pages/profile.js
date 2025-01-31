@@ -173,7 +173,7 @@ export default function Profile({  initialProfile, initialPosts, initialHasMore 
             {posts.map((post) => (
               <div
                 key={post._id}
-                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp flex flex-col justify-center items-start overflow-hidden"
+                className="post p-7 mx-3 bg-gray-200 drop-shadow-xl dark:bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp flex flex-col justify-center items-start overflow-hidden"
               >
                 <div className="post-header flex w-full relative mb-2">
                   <div className="post-username font-semibold w-full"><span className="text-purp">oh/</span>{session.user.username}</div>
@@ -183,7 +183,7 @@ export default function Profile({  initialProfile, initialPosts, initialHasMore 
                       className="fa-solid fa-ellipsis-vertical px-2 text-xl cursor-pointer"
                     ></i>
                     {dropdownOpenPostId === post._id && (
-                      <ul className="dropdown-menu bg-zinc-800 rounded-md shadow-lg absolute right-0 mt-2 z-10">
+                      <ul className="dropdown-menu bg-zinc-800 text-white rounded-md shadow-lg absolute right-0 mt-2 z-10">
                         <li
                           className="dropdown-item px-4 py-2 hover:bg-zinc-700 cursor-pointer"
                           onClick={() => deletePost(post._id)}

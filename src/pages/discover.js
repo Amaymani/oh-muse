@@ -48,7 +48,7 @@ const Discover = () => {
                         />
                     </div>
                     {results.length > 0 && (
-                        <ul className='flex flex-col w-full rounded-b-2xl bg-zinc-900'>
+                        <ul className='flex flex-col w-full rounded-b-2xl bg-gray-300 dark:bg-zinc-900'>
                             {results.map((user) => (
                                 <Link className='border-t py-3 border-gray-700' key={user._id} href={`/profile/${user.username}`}>
                                     <span className='text-purp pl-2 font-semibold'>oh/</span>{user.username}

@@ -150,17 +150,17 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
             />
           </div>
           <div className="username py-2 mb-3 font-semibold text-lg">{communityData.existingCom.communityName}</div>
-          <button onClick={joinCommunity} className='px-6 py-3 bg-purp mb-5 rounded-full text-xl hover:bg-purple-700 duration-200 transition-colors group'><i className="fa-regular fa-square-plus group-hover:text-yell pr-2 duration-200 transition-colors"></i>{joinedStatus}</button>
+          <button onClick={joinCommunity} className='px-6 py-3 bg-purp mb-5 rounded-full text-xl hover:bg-purple-700 duration-200 text-white hover:drop-shadow-xl transition-colors group'><i className="fa-regular fa-square-plus group-hover:text-yell pr-2 duration-200 transition-colors"></i>{joinedStatus}</button>
         </div>
         <div className="flex flex-col w-[50%]">
 
-          <div className="pl-3 my-5">
-            <div className='text-sm font-semibold  '>
+          <div className="pl-3 my-5 font-semibold">
+            <div className='text-sm   '>
               Members: {communityData.existingCom.members.length}
             </div>
             <br />
             Description:<br />
-            <div className='mt-2'>{communityData.existingCom.desc}</div>
+            <div className='mt-2 font-normal'>{communityData.existingCom.desc}</div>
           </div>
         </div>
       </div>
@@ -168,7 +168,7 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
       <hr className="border-purp" />
 
       <div className='flex justify-center items-center w-full mt-5'>
-        <Link href={`${community_id}/create-community-post`} className='px-4 py-3 bg-purp rounded-full font-semibold flex justify-center items-center'><i className="fa-solid fa-plus text-2xl pr-2"></i>Create Post</Link>
+        <Link href={`${community_id}/create-community-post`} className='px-4 py-3 bg-purp rounded-full font-semibold text-white flex justify-center items-center'><i className="fa-solid fa-plus text-2xl pr-2"></i>Create Post</Link>
       </div>
       <div className="parent w-full  flex justify-evenly  ">
 
@@ -189,7 +189,7 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
             {posts.map((post) => (
               <div
                 key={post._id}
-                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp  flex flex-col justify-center items-start overflow-hidden"
+                className="post p-7 mx-3 bg-gray-200 drop-shadow-xl dark:bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp  flex flex-col justify-center items-start overflow-hidden"
               >
 
 

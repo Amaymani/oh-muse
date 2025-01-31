@@ -22,7 +22,7 @@ const ProfileHeader = ({userProfile, openModal}) => {
               className="profile-image rounded-full"
             />
           </div>
-          <div className="username py-2">{userProfile.username}</div>
+          <div className="username font-bold py-2">{userProfile.username}</div>
         </div>
         <div className="flex flex-col w-[50%]">
           <div className="flex justify-evenly mt-10">
@@ -41,7 +41,7 @@ const ProfileHeader = ({userProfile, openModal}) => {
           </div>
           <Link
             href={"/edit-profile"}
-            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5 mx-2"
+            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5 mx-2 text-white "
           >
             Edit Profile
           </Link>

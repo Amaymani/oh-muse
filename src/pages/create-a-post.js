@@ -93,7 +93,7 @@ const CreatePost = () => {
               onChange={handlePostChange}
               value={post}
               placeholder="Write your Pohst ohnomusely here..."
-              className="w-[80%] h-[6rem] mx-5 p-3 mt-3 border-b-2 border-gray-300 resize-none"
+              className="w-[80%] h-[6rem] mx-5 p-3 mt-3 border-b-2 border-gray-400 resize-none"
             ></textarea>
           </div>
 
@@ -134,7 +134,7 @@ const CreatePost = () => {
 
 
           <div className="flex justify-center items-center mt-5">
-            <button className="py-3 px-3 rounded-xl bg-purp flex justify-center items-center" type="submit">Upload</button>
+            <button className="py-3 px-3 rounded-xl bg-purp flex justify-center text-white items-center" type="submit">Upload</button>
 
           </div>
         </form>

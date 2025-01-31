@@ -179,7 +179,7 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
                             className="profile-image rounded-full"
                         />
                     </div>
-                    <div className="username py-2">{username}</div>
+                    <div className="username font-bold py-2">{username}</div>
                 </div>
                 <div className="flex flex-col w-[50%]">
                     <div className="flex justify-evenly mt-10">
@@ -223,7 +223,7 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
                         {posts.map((post) => (
                             <div
                                 key={post._id}
-                                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp  flex flex-col justify-center items-start overflow-hidden"
+                                className="post p-7 mx-3 bg-gray-200 drop-shadow-xl dark:bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp  flex flex-col justify-center items-start overflow-hidden"
                             >
 
 

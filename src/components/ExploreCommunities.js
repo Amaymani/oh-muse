@@ -36,7 +36,7 @@ const ExploreCommunities = () => {
                 {/* Display communities */}
                 {communities.map((community) => (
                     <Link key={community._id} href={`/community/${community._id}`}
-                    className='flex m-3 place-content-evenly  flex-col justify-center items-center bg-zinc-900 p-5 rounded-lg'>
+                    className='flex m-3 place-content-evenly  flex-col justify-center items-center border-purp border dark:border-0 bg-gray-200 drop-shadow-2xl dark:bg-zinc-900 p-5 rounded-lg'>
                         <Image
                             src={community.imageUrl}
                             width={50}

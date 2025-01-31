@@ -152,7 +152,7 @@ export default function Home() {
             {posts.map((post) => (
               <div
                 key={post._id}
-                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp flex flex-col justify-center items-start overflow-hidden"
+                className="post p-7 mx-3 bg-gray-200 drop-shadow-xl dark:bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp flex flex-col justify-center items-start overflow-hidden"
               >
                 {/* Post Header */}
                 <div className="post-header flex w-full relative mb-2">
