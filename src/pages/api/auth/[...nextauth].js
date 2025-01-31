@@ -4,63 +4,58 @@ import connectDB from '@/lib/dbConnect';
 import User from '@/lib/models/user';
 import bcrypt from 'bcryptjs';
 
-export default NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         await connectDB();
-
         const { email, password } = credentials;
 
         try {
-          const user = await User.findOne({ email: email });
-          
+          const user = await User.findOne({ email });
           if (!user) {
-            console.log('No user found with this email');
-            throw new Error('No user found with this email');
+            throw new Error("No user found with this email");
           }
-          
+
           const isValidPassword = await bcrypt.compare(password, user.password);
           if (!isValidPassword) {
-            console.log('Invalid password');
-            throw new Error('Invalid password');
+            throw new Error("Invalid password");
           }
-          console.log("User authenticated:", user.email);
-          return {id:user._id, email: user.email, username:user.username || null };
+
+          return { id: user._id.toString(), email: user.email, username: user.username };
         } catch (error) {
-          console.error('Error in authorize function:', error);
+          console.error("Error in authorize function:", error);
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
   session: {
-    strategy: "jwt",
-    maxAge:60*60*24*2
+    strategy: "jwt", // Ensure session is stored as JWT
+    maxAge: 60 * 60 * 24 * 2, // 2 days
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.username = user.username;
+        token.username = user.username; // Ensure username is added to JWT
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = {
-        id: token.id,
-        email: token.email,
-        username: token.username
-      };
+      session.user.id = token.id;
+      session.user.email = token.email;
+      session.user.username = token.username; // Ensure username is available in session
       return session;
-    }
-    
+    },
   },
-  secret: process.env.NEXTAUTH_SECRET
-});
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+export default NextAuth(authOptions);

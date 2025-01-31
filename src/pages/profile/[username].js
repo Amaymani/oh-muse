@@ -6,11 +6,11 @@ import Image from "next/image";
 import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import FollowerModel from "@/components/FollowerModel";
-import { useSession, getServerSession } from "next-auth/react";
-import ProfileHeader from "@/components/ProfileHeader";
+import { useSession } from "next-auth/react";
+import {getServerSession} from "next-auth/next"
 import PostEngagement from "@/components/PostEngagement";
 import TrendingSection from "@/components/TrendingSection";
-import {NextAuth} from "@/pages/api/auth/[...nextauth]"
+import {authOptions} from "@/pages/api/auth/[...nextauth]"
 
 const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, sessionUserData }) => {
 
@@ -282,15 +282,8 @@ export default ProfilePage;
 export async function getServerSideProps(context) {
     try {
         const { username } = context.query;
-        const session = await getServerSession(context.req, context.res, NextAuth);
-        if (!session) {
-            return {
-                redirect: {
-                    destination: "/login",
-                    permanent: false,
-                },
-            };
-        }
+        const session = await getServerSession(context.req,context.res, authOptions);
+        console.log(session.user.username,"================");
 
         const sessionUsername = session.user.username;
         const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
@@ -320,7 +313,7 @@ export async function getServerSideProps(context) {
             },
         };
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data in getserversideprops hehe:", error);
         return {
             props: {
                 initialProfile: { img: "", bio: "" },

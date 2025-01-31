@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession, signOut, getSession } from "next-auth/react";
+import {getServerSession} from "next-auth/next"
+import { authOptions } from "./api/auth/[...nextauth]";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -241,7 +243,7 @@ export default function Profile({  initialProfile, initialPosts, initialHasMore 
 
 export async function getServerSideProps(context) {
   try {
-    const session = await getSession(context);
+    const session = await getServerSession(context.req,context.res, authOptions);
     if (!session) {
       return {
         redirect: {
