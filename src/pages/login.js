@@ -20,7 +20,7 @@ const Login = (props) => {
   });
   const [error, setError] = useState(null);
   const router = useRouter();
-  const {data : sessionData,status}=useSession();
+  const {data : session ,status}=useSession();
   const [InvalidCredentials, setInvalidCredentials] = useState(false);
 
 
@@ -53,6 +53,8 @@ const Login = (props) => {
                 password: formData.password,
                 redirect: false
               });
+
+              
           router.push('/');
         }
         
@@ -80,6 +82,7 @@ const Login = (props) => {
                         type="text"
                         className="block border bg-lightbg border-grey-light w-full p-3 rounded mb-4"
                         name="email"
+                        autoComplete="email" 
                         placeholder="Email"
                         value={formData.email}
                         onChange={handleChange} />
@@ -89,6 +92,7 @@ const Login = (props) => {
                         className="block border bg-lightbg border-grey-light w-full p-3 rounded mb-4"
                         name="password"
                         placeholder="Password"
+                        autoComplete="current-password"
                         value={formData.password}
                         onChange={handleChange} />
 

@@ -12,7 +12,7 @@ import ProfileHeader from "@/components/ProfileHeader";
 import PostEngagement from "@/components/PostEngagement";
 import TrendingSection from "@/components/TrendingSection";
 
-export default function Profile({ followers, initialProfile, initialPosts, initialHasMore }) {
+export default function Profile({  initialProfile, initialPosts, initialHasMore }) {
   const Router = useRouter();
   const [mounted, setMounted] = useState(false);
   const onlyWidth = useWindowWidth();
@@ -252,7 +252,7 @@ export async function getServerSideProps(context) {
     }
 
     const username = session.user.username;
-    const baseURL = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
     const profileRes = await axios.get(`${baseURL}/api/profile`, {
       params: { username },

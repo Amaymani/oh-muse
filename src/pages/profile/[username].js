@@ -292,7 +292,7 @@ export async function getServerSideProps(context) {
         }
 
         const sessionUsername = session.user.username;
-        const baseURL = process.env.NEXTAUTH_URL || "http://localhost:3000";
+        const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
         const profileRes = await axios.get(`${baseURL}/api/profile`, {
             params: { username, reqType: "profile" },

@@ -254,7 +254,7 @@ export async function getServerSideProps(context) {
 
     const { community_id } = context.query;
 
-    const baseURL = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL|| "http://localhost:3000";
 
     const communityRes = await axios.get(`${baseURL}/api/community`, {
       params: { community_id },

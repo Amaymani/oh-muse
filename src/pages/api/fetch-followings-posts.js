@@ -61,7 +61,7 @@ export default async function handler(req, res) {
 
                 
         const totalPosts = await Post.countDocuments({ user: { $in: followingUsernames} });
-        
+        console.log(totalPosts)
         return res.status(200).json({ posts:postsWithSignedUrls, total: totalPosts });
     } catch (error) {
         console.error("Error fetching followings' posts:", error);

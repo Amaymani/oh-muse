@@ -12,6 +12,7 @@ export default function Home() {
   const { data: session, status } = useSession();
   const loading = status === "loading";
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
@@ -19,35 +20,57 @@ export default function Home() {
   const [commentOpenPostId, setCommentOpenPostId] = useState(null);
     const [commentText, setCommentText] = useState("");
 
+    useEffect(() => {
+      setMounted(true);
+    }, []);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (status !== "loading" && (!session || !session.user)) {
-      router.push("/login");
-    }
-  }, [session, status, router]);
 
-  // Fetch posts function
-  const fetchPosts = async () => {
-    if (!session?.user?.id) return; 
-
-    try {
-      const response = await axios.get("/api/fetch-followings-posts", {
-        params: { userId: session.user.id, page },
-      });
-
-      const data = response.data;
-
-      if (data.posts.length === 0) {
-        setHasMore(false);
-      } else {
-        setPosts((prev) => [...prev, ...data.posts]);
-        setPage((prevPage) => prevPage + 1);
+    useEffect(() => {
+      if (!session || !session.user) {
+        router.push("/login");
       }
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    }
-  };
+    }, [session, router]);
+    const fetchPosts = async () => {
+      if (!session?.user?.id) return; 
+  
+      try {
+        const response = await axios.get("/api/fetch-followings-posts", {
+          params: { userId: session.user.id, page },
+        });
+  
+        const data = response.data;
+  
+        if (data.posts.length === 0) {
+          setHasMore(false);
+        } else {
+          setPosts((prev) => {
+            // Avoid adding duplicate posts
+            const existingPostIds = new Set(prev.map(post => post._id));
+            const newPosts = data.posts.filter(post => !existingPostIds.has(post._id));
+    
+            return [...prev, ...newPosts];
+          });
+    
+          setPage((prevPage) => prevPage + 1);
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    };
+
+    useEffect(() => {
+      
+  
+        fetchPosts(); // Only fetch posts if user is authenticated
+  
+    }, []); 
+
+  if (!mounted || loading) {
+    return <div>Loading...</div>;
+  }
+
+  
+
   const openComment = (postId) => {
     setCommentOpenPostId((prev) => (prev === postId ? null : postId));
   };
@@ -91,17 +114,13 @@ export default function Home() {
       console.error("Error adding comment:", error);
     }
   };
+  
 
   const handleCommentChange = (e) => {
     setCommentText(e);
   }
 
-
-
- 
-  useEffect(() => {
-    fetchPosts();
-  }, [session]); 
+  
 
 
 
