@@ -5,6 +5,7 @@ import { useWindowWidth} from '@react-hook/window-size/throttled'
 import Brand from "@/components/Brand";
 import { SessionProvider } from "next-auth/react";
 import Head from "next/head";
+import Footer from "@/components/Footer";
 
 export default function App({ Component, pageProps:{ session, ...pageProps } }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -26,6 +27,7 @@ export default function App({ Component, pageProps:{ session, ...pageProps } }) 
     </div>
    
     <Component {...pageProps} />
+    <Footer/>
     </SessionProvider>
   </ThemeProvider>
 )
