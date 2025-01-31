@@ -7,6 +7,7 @@ import Image from 'next/image';
 import InfiniteScroll from "react-infinite-scroll-component";
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import PostEngagement from "@/components/PostEngagement";
 const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
 
   const Router = useRouter();
@@ -20,7 +21,8 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
   const loading = status === "loading";
   const [joinedStatus, setJoinedStatus] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
-
+  const [commentOpenPostId, setCommentOpenPostId] = useState(null);
+  const [commentText, setCommentText] = useState("");
   useEffect(() => {
     setIsHydrated(true);
 
@@ -28,15 +30,15 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
       return; // Do nothing if not hydrated or loading, it is giving error upon the rendering of the page
     }
 
-    const checkIfUserIsMember =() => {
+    const checkIfUserIsMember = () => {
       const isMember = communityData.existingCom.members.includes(session.user.id);
-      
+
       isMember ? setJoinedStatus("Joined") : setJoinedStatus("Join");
       return isMember;
     };
 
     checkIfUserIsMember();
-  }, [isHydrated, status,communityData, session?.user?._id, joinedStatus]);
+  }, [isHydrated, status, communityData, session?.user?._id, joinedStatus]);
 
   if (!isHydrated) {
     return <div>loading...</div>;
@@ -44,16 +46,24 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
 
 
 
-    if (!loading && (!session || !session.user)) {
-      Router.push("/login");
-    }
+  if (!loading && (!session || !session.user)) {
+    Router.push("/login");
+  }
+
+  const openComment = (postId) => {
+    setCommentOpenPostId((prev) => (prev === postId ? null : postId));
+  };
+
+  const closeComment = () => {
+    setCommentOpenPostId(null);
+  };
 
   const joinCommunity = async (e) => {
     e.preventDefault();
-    try {   
+    try {
       const response = await axios.post(`/api/join-community`,
         {
-        user_id: session.user.id,
+          user_id: session.user.id,
           community_id: community_id,
           reqType: "join"
         });
@@ -66,7 +76,7 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
 
   const fetchMorePosts = async () => {
     try {
-      
+
       const response = await axios.get(`/api/fetch-posts`, {
         params: { username: username, page },
       });
@@ -75,11 +85,49 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
       setPosts((prevPosts) => [...prevPosts, ...newPosts]);
       setPage((prevPage) => prevPage + 1);
       setHasMore(response.data.hasMore);
-      console.log(communityData.existingCom.members.includes(userid))
+
     } catch (error) {
       console.error("Error fetching more posts:", error);
     }
   };
+  const likePost = async (postId) => {
+    try {
+      const response = await axios.post(`/api/add-like-comments`, { postId, userId: session.user.id, action: "like" });
+      const updatedPost = response.data.post;
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId ? { ...post, likes: updatedPost.likes } : post
+        )
+      );
+    } catch (error) {
+      console.error("Error liking post:", error);
+    }
+  };
+
+  const addComment = async (postId, e) => {
+    e.preventDefault();
+    try {
+
+      const response = await axios.post("/api/add-like-comments", {
+        postId,
+        userId: session.user.id,
+        action: "comment",
+        commentText,
+      });
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId ? { ...post, comments: response.data.post.comments } : post
+        )
+      );
+      setCommentText("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+  const handleCommentChange = (e) => {
+    setCommentText(e);
+  }
 
   return (
     <div>
@@ -177,17 +225,7 @@ const CommunityPage = ({ initialCommunity, initialPosts, initialHasMore }) => {
                   <h2 className="post-caption text-md pt-1">{post.text}</h2>
 
                 </div>
-                <div className="engagement-stats flex justify-start  w-full mt-5">
-                  <div className="Likes w-[50%] flex text-xl">
-                    <i className="fa-solid fa-heart hover:text-purp transition-colors duration-150 "></i>
-                    <div className="text-sm ml-5">100K</div>
-                  </div>
-                  <div className="Comments w-[50%] flex text-xl">
-                    <i className="fa-solid fa-comment hover:text-purp  transition-colors duration-150"></i>
-                    <div className="text-sm ml-5">100K</div>
-                  </div>
-                  <div><i className="fa-solid fa-flag hover:text-red-500  transition-colors duration-150"></i></div>
-                </div>
+                <PostEngagement post={post} userId={post.user} openComment={openComment} commentOpenPostId={commentOpenPostId} handleCommentChange={handleCommentChange} commentText={commentText} addComment={addComment} likePost={likePost} closeComment={closeComment} />
               </div>
             ))}
           </InfiniteScroll>

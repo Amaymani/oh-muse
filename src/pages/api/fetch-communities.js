@@ -4,7 +4,6 @@ import { getObjectURL } from "@/lib/s3Client";
 
 export default async function handler(req, res) {
 
-
   if (req.method === "GET") {
     const { page } = req.query;
     console.log(page);
@@ -14,10 +13,13 @@ export default async function handler(req, res) {
         connectDB();
         const communities = await Community.aggregate([
           {
-            $sort: { membersCount: -1 }
+            $addFields: { membersCount: { $size: "$members" } } // Add a field with the size of the 'members' array
           },
           {
-            $limit: 3
+            $sort: { membersCount: -1 } // Sort by the size in descending order
+          },
+          {
+            $limit: 3 // Limit to top 3
           }
         ]);
 

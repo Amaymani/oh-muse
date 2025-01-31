@@ -10,7 +10,7 @@ const ExploreCommunities = () => {
     useEffect(() => {
         async function fetchMorePosts() {
             try {
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}/api/fetch-communities`
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}/api/fetch-communities` 
                     , {
                         params: {
                             page: "explore-communities",
@@ -45,7 +45,7 @@ const ExploreCommunities = () => {
                             className='sm:h-32 h-28 w-28  border-2 border-purp rounded-full sm:w-32 object-contain' />
                         <h2 className='text-xl mt-4'>{community.communityName}</h2>
                         
-                        <p className='text-sm text-zinc-500'>members: {community.membersCount}</p>
+                        <p className='text-sm text-zinc-500'>members: {community.members.length}</p>
                     </Link>
                 ))}
             </div>

@@ -16,17 +16,16 @@ body::-webkit-scrollbar {
     display: none;
 }
 
-/* Background Blur and Modal Styles */
 .backdrop-blur-sm {
-    backdrop-filter: blur(5px); /* Apply blur to the background */
+    backdrop-filter: blur(5px); 
   }
   
   .blur-sm {
-    filter: blur(5px); /* Blur effect on the main content */
+    filter: blur(5px); 
   }
   
-  /* Optional Modal Enhancements */
+
   body.modal-open {
-    overflow: hidden; /* Prevent scrolling when modal is open */
+    overflow: hidden; 
   }
   

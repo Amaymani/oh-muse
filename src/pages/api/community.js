@@ -31,6 +31,8 @@ export default async function handler(req, res) {
             communityImgUrl: communityImgUrl,
 
         }
+
+        console.log(commData)
         return res.status(200).json(
         commData
 

@@ -8,6 +8,9 @@ import Image from "next/image";
 import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import FollowerModel from "@/components/FollowerModel";
+import ProfileHeader from "@/components/ProfileHeader";
+import PostEngagement from "@/components/PostEngagement";
+import TrendingSection from "@/components/TrendingSection";
 
 export default function Profile({ followers, initialProfile, initialPosts, initialHasMore }) {
   const Router = useRouter();
@@ -22,7 +25,8 @@ export default function Profile({ followers, initialProfile, initialPosts, initi
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [dropdownOpenPostId, setDropdownOpenPostId] = useState(null);
   const [followersAndfollowing, setFollowersAndFollowing] = useState([]);
-  const [followReqType, setFollowReqType] = useState(false);
+  const [commentOpenPostId, setCommentOpenPostId] = useState(null);
+  const [commentText, setCommentText] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -41,11 +45,19 @@ export default function Profile({ followers, initialProfile, initialPosts, initi
   const openModal = (params) => {
     setIsModalOpen(true);
     fetchFollowersAndFollowing(params);
-};
+  };
 
-const closeModal = () => {
+  const closeModal = () => {
     setIsModalOpen(false);
-};
+  };
+
+  const openComment = (postId) => {
+    setCommentOpenPostId((prev) => (prev === postId ? null : postId));
+  };
+
+  const closeComment = () => {
+    setCommentOpenPostId(null);
+  };
 
   const toggleDropdown = (postId) => {
     setDropdownOpenPostId((prev) => (prev === postId ? null : postId));
@@ -61,19 +73,55 @@ const closeModal = () => {
     }
   };
 
+  const likePost = async (postId) => {
+    try {
+      const response = await axios.post(`/api/add-like-comments`, { postId, userId: session.user.id, action: "like" });
+      const updatedPost = response.data.post;
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId ? { ...post, likes: updatedPost.likes } : post
+        )
+      );
+    } catch (error) {
+      console.error("Error liking post:", error);
+    }
+  };
+
+  const addComment = async (postId, e) => {
+    e.preventDefault();
+    try {
+
+      const response = await axios.post("/api/add-like-comments", {
+        postId,
+        userId: session.user.id,
+        action: "comment",
+        commentText,
+      });
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId ? { ...post, comments: response.data.post.comments } : post
+        )
+      );
+      setCommentText("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const handleCommentChange = (e) => {
+    setCommentText(e);
+  }
   const fetchFollowersAndFollowing = async (params) => {
     try {
-      
       const response = await axios.get(`/api/fetch-followers-following`, {
         params: { username: params.username, reqType: params.reqType },
       });
-
-      console.log(params.username);
-      setFollowersAndFollowing(response.data.detail)
+      setFollowersAndFollowing(response.data.detail);
     } catch (error) {
       console.error("Error fetching followers and following:", error);
     }
-  }
+  };
 
   const fetchMorePosts = async () => {
     try {
@@ -83,7 +131,7 @@ const closeModal = () => {
       }
       const response = await axios.get(`/api/fetch-posts`, {
         params: { username: session.user.username, page, reqType: "profile" },
-      });
+      }); 
 
       const newPosts = response.data.posts;
       setPosts((prevPosts) => [...prevPosts, ...newPosts]);
@@ -101,56 +149,12 @@ const closeModal = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex justify-center items-center w-full">
-        <div className="flex flex-col justify-center items-center w-[50%]">
-          <div className="relative m-auto w-40 h-40 rounded-full">
-            <Image
-              priority
-              quality={5}
-              src={userProfile.profileImg || "/pfp.webp"}
-              alt=""
-              fill
-              sizes="(max-width: 768px) 100vw, 
-         (max-width: 1200px) 50vw, 
-         33vw"
-              placeholder="blur"
-              blurDataURL="/pfp.webp"
-              style={{ objectFit: "cover" }}
-              className="profile-image rounded-full"
-            />
-          </div>
-          <div className="username py-2">{session.user.username}</div>
-        </div>
-        <div className="flex flex-col w-[50%]">
-          <div className="flex justify-evenly mt-10">
-            <div onClick={()=>{openModal({reqType:"followers",username:userProfile.username})}} className="flex flex-col justify-center items-center">
-              <div className="font-semibold">{userProfile.followers.length}</div>
-              <div>Follower</div>
-            </div>
-            <div onClick={()=>{openModal({reqType:"following",username:userProfile.username})}} className="flex flex-col justify-center items-center">
-              <div className="font-semibold">{userProfile.following.length}</div>
-              <div>Following</div>
-            </div>
-          </div>
-          <div className="pl-3 my-5">
-            Bio:<br />
-            {userProfile.bio}
-          </div>
-          <Link
-            href={"/edit-profile"}
-            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5 mx-2"
-          >
-            Edit Profile
-          </Link>
-        </div>
-      </div>
+
+      <ProfileHeader userProfile={userProfile} openModal={openModal} />
 
       <hr className="border-purp" />
 
-
-      <div className="parent w-full  flex justify-evenly  ">
-
-        {/* <PostsComp posts={posts}/> */}
+      <div className="parent w-full flex justify-evenly">
         <div className="child-posts w-full sm:w-[50%]">
           <InfiniteScroll
             className=""
@@ -167,18 +171,11 @@ const closeModal = () => {
             {posts.map((post) => (
               <div
                 key={post._id}
-                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp  flex flex-col justify-center items-start overflow-hidden"
+                className="post p-7 mx-3 bg-zinc-900 rounded-3xl border-b-2 mt-5 border-purp flex flex-col justify-center items-start overflow-hidden"
               >
-
-
-                <div className="post-header flex  w-full relative mb-2">
+                <div className="post-header flex w-full relative mb-2">
                   <div className="post-username font-semibold w-full"><span className="text-purp">oh/</span>{session.user.username}</div>
-                  
                   <p className="post-timestamp text-sm pb-5 absolute right-0">
-
-
-
-
                     {new Date(post.createdAt).toLocaleString().slice(0, 10)}
                     <i onClick={() => toggleDropdown(post._id)}
                       className="fa-solid fa-ellipsis-vertical px-2 text-xl cursor-pointer"
@@ -198,7 +195,6 @@ const closeModal = () => {
 
                 {post.communityid && (<div className="mb-5"><Link href={`/community/${post.communityid}`} className="text-purp font-extrabold">C/ohmmunity Post - View c/ohmmunity</Link></div>)}
 
-
                 {post.imageUrl && (
                   <div className="relative w-full h-96">
                     <Image
@@ -213,7 +209,6 @@ const closeModal = () => {
                       placeholder="blur"
                       style={{
                         objectFit: "contain",
-
                       }}
                       className="post-image z-0"
                     />
@@ -221,41 +216,25 @@ const closeModal = () => {
                 )}
                 <div className="post-content text-left">
                   <h2 className="post-caption text-md pt-1">{post.text}</h2>
+                </div>
 
-                </div>
-                <div className="engagement-stats flex justify-start  w-full mt-5">
-                  <div className="Likes w-[50%] flex text-xl">
-                    <i className="fa-solid fa-heart hover:text-purp transition-colors duration-150 "></i>
-                    <div className="text-sm ml-5">100K</div>
-                  </div>
-                  <div className="Comments w-[50%] flex text-xl">
-                    <i className="fa-solid fa-comment hover:text-purp  transition-colors duration-150"></i>
-                    <div className="text-sm ml-5">100K</div>
-                  </div>
-                  <div><i className="fa-solid fa-flag hover:text-red-500  transition-colors duration-150"></i></div>
-                </div>
+
+                <PostEngagement post={post} userId={session.user.id} openComment={openComment} commentOpenPostId={commentOpenPostId} handleCommentChange={handleCommentChange} commentText={commentText} addComment={addComment} likePost={likePost} closeComment={closeComment} />
+
               </div>
             ))}
           </InfiniteScroll>
-
         </div>
-        
 
-        {onlyWidth > 1023 ? <div className="child-trending w-[30rem] bg-zinc-900 mt-5 rounded-3xl">
-          <div className="text-xl p-4 pl-6 font-semibold">Trending Section</div>
-          <hr className="border-purp"></hr>
-          <div className='flex justify-center items-center text-xl my-20'><i className="fa-solid fa-code text-2xl text-purp mr-5"></i><div>Explore page<br />under construction</div></div>
-
-        </div> : ""}
-
+        {<TrendingSection onlyWidth={onlyWidth} />}
       </div>
 
       <button onClick={handleLogout} className="p-4 bg-purp rounded-full m-5">
         logout
       </button>
       {isModalOpen && (
-                <FollowerModel followers={followersAndfollowing} type={fetchFollowersAndFollowing} onClose={closeModal} />
-            )}
+        <FollowerModel followers={followersAndfollowing} type={fetchFollowersAndFollowing} onClose={closeModal} />
+      )}
     </div>
   );
 }

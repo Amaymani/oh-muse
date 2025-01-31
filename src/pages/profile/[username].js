@@ -7,7 +7,9 @@ import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import FollowerModel from "@/components/FollowerModel";
 import { useSession, getSession } from "next-auth/react";
-
+import ProfileHeader from "@/components/ProfileHeader";
+import PostEngagement from "@/components/PostEngagement";
+import TrendingSection from "@/components/TrendingSection";
 
 const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, sessionUserData }) => {
 
@@ -26,6 +28,8 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
     const [userData, setUserData] = useState(sessionUserData);
     const [followersAndfollowing, setFollowersAndFollowing] = useState([]);
     const [followReqType, setFollowReqType] = useState(false);
+    const [commentOpenPostId, setCommentOpenPostId] = useState(null);
+    const [commentText, setCommentText] = useState("");
 
     useEffect(() => {
         setMounted(true);
@@ -39,6 +43,53 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
     const closeModal = () => {
         setIsModalOpen(false);
     };
+    const openComment = (postId) => {
+        setCommentOpenPostId((prev) => (prev === postId ? null : postId));
+    };
+
+    const closeComment = () => {
+        setCommentOpenPostId(null);
+    };
+
+    const likePost = async (postId) => {
+        try {
+            const response = await axios.post(`/api/add-like-comments`, { postId, userId: session.user.id, action: "like" });
+            const updatedPost = response.data.post;
+
+            setPosts((prevPosts) =>
+                prevPosts.map((post) =>
+                    post._id === postId ? { ...post, likes: updatedPost.likes } : post
+                )
+            );
+        } catch (error) {
+            console.error("Error liking post:", error);
+        }
+    };
+
+    const addComment = async (postId, e) => {
+        e.preventDefault();
+        try {
+
+            const response = await axios.post("/api/add-like-comments", {
+                postId,
+                userId: session.user.id,
+                action: "comment",
+                commentText,
+            });
+            setPosts((prevPosts) =>
+                prevPosts.map((post) =>
+                    post._id === postId ? { ...post, comments: response.data.post.comments } : post
+                )
+            );
+            setCommentText("");
+        } catch (error) {
+            console.error("Error adding comment:", error);
+        }
+    };
+
+    const handleCommentChange = (e) => {
+        setCommentText(e);
+    }
 
     const checkFollow = async () => {
         const isFollowing = userData.following.includes(userProfile.id);
@@ -53,10 +104,8 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
 
     }
 
-
-
-    useEffect(() => {  
-        checkFollow(); 
+    useEffect(() => {
+        checkFollow();
     }, [userData]);
 
 
@@ -65,17 +114,16 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
 
     const fetchFollowersAndFollowing = async (params) => {
         try {
-            console.log(params)
-          
-          const response = await axios.get(`/api/fetch-followers-following`, {
-            params: { username: params.username, reqType: params.reqType },
-          });
-          console.log(response.data.detail);
-          setFollowersAndFollowing(response.data.detail)
+
+            const response = await axios.get(`/api/fetch-followers-following`, {
+                params: { username: params.username, reqType: params.reqType },
+            });
+
+            setFollowersAndFollowing(response.data.detail)
         } catch (error) {
-          console.error("Error fetching followers and following:", error);
+            console.error("Error fetching followers and following:", error);
         }
-      }
+    }
 
 
 
@@ -105,21 +153,15 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
             });
 
             setUserData(response.data.User);
-            
+
         } catch (error) {
             console.error("Error following user:", error);
         }
     };
 
-    
-
-
     return (
         <div>
             <Navbar />
-
-
-
             <div className={`flex justify-center items-center w-full ${isModalOpen ? "blur-sm" : ""}`}>
                 <div className="flex flex-col justify-center items-center w-[50%]">
                     <div className="relative m-auto w-40 h-40 rounded-full">
@@ -140,11 +182,11 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
                 </div>
                 <div className="flex flex-col w-[50%]">
                     <div className="flex justify-evenly mt-10">
-                        <div onClick={()=>{openModal({reqType:"following",username:userProfile.username})}} className="flex flex-col justify-center items-center">
+                        <div onClick={() => { openModal({ reqType: "following", username: userProfile.username }) }} className="flex flex-col justify-center items-center">
                             <div className="font-semibold">{userProfile.followers.length}</div>
                             <div>Follower</div>
                         </div>
-                        <div onClick={()=>{openModal({reqType:"following",username:userProfile.username})}} className="flex flex-col justify-center items-center">
+                        <div onClick={() => { openModal({ reqType: "following", username: userProfile.username }) }} className="flex flex-col justify-center items-center">
                             <div className="font-semibold">{userProfile.following.length}</div>
                             <div>Following</div>
                         </div>
@@ -161,8 +203,6 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
             </div>
 
             <hr className="border-purp" />
-
-
             <div className="parent w-full flex justify-evenly  ">
 
                 {/* <PostsComp posts={posts}/> */}
@@ -218,29 +258,15 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
                                     <h2 className="post-caption text-md pt-1">{post.text}</h2>
 
                                 </div>
-                                <div className="engagement-stats flex justify-start  w-full mt-5">
-                                    <div className="Likes w-[50%] flex text-xl">
-                                        <i className="fa-solid fa-heart hover:text-purp transition-colors duration-150 "></i>
-                                        <div className="text-sm ml-5">100K</div>
-                                    </div>
-                                    <div className="Comments w-[50%] flex text-xl">
-                                        <i className="fa-solid fa-comment hover:text-purp  transition-colors duration-150"></i>
-                                        <div className="text-sm ml-5">100K</div>
-                                    </div>
-                                    <div><i className="fa-solid fa-flag hover:text-red-500  transition-colors duration-150"></i></div>
-                                </div>
+                                <PostEngagement post={post} userId={userProfile.id} openComment={openComment} commentOpenPostId={commentOpenPostId} handleCommentChange={handleCommentChange} commentText={commentText} addComment={addComment} likePost={likePost} closeComment={closeComment} />
+
                             </div>
                         ))}
                     </InfiniteScroll>
 
                 </div>
 
-                {onlyWidth > 639 ? <div className="child-trending w-[30rem] bg-zinc-900 mt-5 rounded-3xl">
-                    <div className="text-xl p-4 pl-6 font-semibold">Trending Section</div>
-                    <hr className="border-purp"></hr>
-                    <div className='flex justify-center items-center text-xl my-20'><i className="fa-solid fa-code text-2xl text-purp mr-5"></i><div>Explore page<br />under construction</div></div>
-
-                </div> : ""}
+                {<TrendingSection onlyWidth={onlyWidth} />}
 
             </div>
             {isModalOpen && (

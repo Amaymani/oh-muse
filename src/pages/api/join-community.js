@@ -18,6 +18,7 @@ export default async function handler(req, res) {
         const communityData = await community.findOneAndUpdate(
             { _id: community_id },
             { $addToSet: { members: user_id } },
+            {$inc: { membersCount: 1 } },
             { new: true } 
           );
 
