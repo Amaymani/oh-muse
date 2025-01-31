@@ -6,10 +6,11 @@ import Image from "next/image";
 import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import FollowerModel from "@/components/FollowerModel";
-import { useSession, getSession } from "next-auth/react";
+import { useSession, getServerSession } from "next-auth/react";
 import ProfileHeader from "@/components/ProfileHeader";
 import PostEngagement from "@/components/PostEngagement";
 import TrendingSection from "@/components/TrendingSection";
+import {NextAuth} from "@/pages/api/auth/[...nextauth]"
 
 const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, sessionUserData }) => {
 
@@ -281,7 +282,7 @@ export default ProfilePage;
 export async function getServerSideProps(context) {
     try {
         const { username } = context.query;
-        const session = await getSession(context);
+        const session = await getServerSession(context.req, context.res, NextAuth);
         if (!session) {
             return {
                 redirect: {
