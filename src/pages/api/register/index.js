@@ -11,10 +11,13 @@ export default async function POST(req, res) {
 
         await connectDB();
         const existingUser = await User.findOne({ email:email });
-        if (existingUser) {
-            return res.status(409).json({ message: "Username already exists" });
+        const existingUsername = await User.findOne({ username:username });
+        if (existingUser || existingUsername) {
+            return res.status(409).json({ message: "*Username or email already exists" });
         }
-
+        if (password.length<=8){
+            return res.status(422).json({message:"*Password must be of 8 characters!"})
+        }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
     

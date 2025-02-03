@@ -41,8 +41,17 @@ const Register = () => {
             if (res.status === 201) {
                 router.push('/login');
             }
+            
         }
         catch (error) {
+            if(error.response.status === 409){
+                setError(error.response.data.message);
+                return;
+            }
+            if(error.response.status === 422){
+                setError(error.response.data.message);
+                return;
+            }
             console.error("Registration error:", error.response?.data?.error || error.message)
         }
     };

@@ -12,6 +12,7 @@ const editProfile = () => {
 
   const { data: session, status } = useSession();
   const loading = status === "loading";
+  const [preview, setPreview] = useState(null);
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -22,6 +23,18 @@ const editProfile = () => {
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
+    const file = e.target.files[0];
+
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreview(null);
+
+    }
   };
 
   const handleBioChange = (e) => {
@@ -55,7 +68,7 @@ const editProfile = () => {
           },
         });
 
-      router.push("/profile");
+        router.push("/profile");
       } catch (uploadError) {
         console.error(
           "File upload error:",
@@ -90,12 +103,38 @@ const editProfile = () => {
           <div className="flex flex-col justify-center items-center">
             <div className="flex justify-center items-center w-40 h-40 relative rounded-full mt-10 hover:opacity-80">
               <div className="absolute text-7xl text-gray-500 ">+</div>
-              <input
-                type="file"
-                name="profileImage"
-                onChange={handleImageChange}
-                className="profile-image bg-gray-300 w-40 h-40 rounded-full"
-              />
+              <div className="relative inline-block">
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  name="profileImage"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute opacity-0 w-full h-full cursor-pointer rounded-full"
+                  id="profileImageInput"
+                />
+
+                {/* Custom visual element */}
+                <label
+                  htmlFor="profileImageInput"
+                  className="flex items-center justify-center bg-gray-300 w-40 h-40 rounded-full cursor-pointer hover:bg-gray-400 transition-colors"
+                >
+                  {!preview && (
+                    <span className="text-gray-600 text-center p-4">
+                      Click to upload photo
+                    </span>
+                  )}
+                </label>
+
+                {/* Image preview */}
+                {preview && (
+                  <img
+                    src={preview}
+                    alt="Profile preview"
+                    className="w-40 h-40 rounded-full object-cover absolute top-0 left-0"
+                  />
+                )}
+              </div>
             </div>
             <div className="mt-10">Username: {session.user.username}</div>
             <input
@@ -107,7 +146,7 @@ const editProfile = () => {
             />
             <button
               type="submit"
-              className="mt-10 px-4 py-2 bg-purp rounded-full flex justify-center my-5 mx-2"
+              className="mt-10 px-4 py-2 bg-purp rounded-full text-white cursor-pointer hover:bg-purple-700 hover:font-bold duration-300 flex justify-center my-5 mx-2"
             >
               Save Changes
             </button>

@@ -41,7 +41,7 @@ const ProfileHeader = ({userProfile, openModal}) => {
           </div>
           <Link
             href={"/edit-profile"}
-            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5 mx-2 text-white "
+            className="p-2 sm:p-4 bg-purp rounded-full flex justify-center my-5 mx-2 text-white hover:bg-purple-700 hover:font-bold hover:drop-shadow-lg duration-200 "
           >
             Edit Profile
           </Link>
