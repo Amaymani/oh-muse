@@ -31,10 +31,15 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
     const [followReqType, setFollowReqType] = useState(false);
     const [commentOpenPostId, setCommentOpenPostId] = useState(null);
     const [commentText, setCommentText] = useState("");
+    
+    
 
     useEffect(() => {
         setMounted(true);
+        
     }, []);
+
+    
 
     const openModal = (params) => {
         setIsModalOpen(true);
@@ -44,6 +49,14 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
     const closeModal = () => {
         setIsModalOpen(false);
     };
+
+    // const handleFollowerClick = (username) => {
+    //     if (username === username) {
+    //       router.reload();
+    //     } else {
+    //       router.push(`/profile/${username}`);
+    //     }
+    //   }
     const openComment = (postId) => {
         setCommentOpenPostId((prev) => (prev === postId ? null : postId));
     };
@@ -183,7 +196,7 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
                 </div>
                 <div className="flex flex-col w-[50%]">
                     <div className="flex justify-evenly mt-10">
-                        <div onClick={() => { openModal({ reqType: "following", username: userProfile.username }) }} className="flex flex-col justify-center items-center">
+                        <div onClick={() => { openModal({ reqType: "followers", username: userProfile.username }) }} className="flex flex-col justify-center items-center">
                             <div className="font-semibold">{userProfile.followers.length}</div>
                             <div>Follower</div>
                         </div>
@@ -271,7 +284,7 @@ const ProfilePage = ({ followers, initialProfile, initialPosts, initialHasMore, 
 
             </div>
             {isModalOpen && (
-                <FollowerModel followers={followersAndfollowing} type={fetchFollowersAndFollowing} onClose={closeModal} />
+                <FollowerModel followers={followersAndfollowing} type={fetchFollowersAndFollowing} onClose={closeModal}   />
             )}
 
         </div>);

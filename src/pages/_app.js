@@ -7,9 +7,12 @@ import { SessionProvider } from "next-auth/react";
 import Head from "next/head";
 import Footer from "@/components/Footer";
 
+import { useRouter } from 'next/router';
+
 export default function App({ Component, pageProps:{ session, ...pageProps } }) {
   const [isMounted, setIsMounted] = useState(false);
   const onlyWidth = useWindowWidth();
+  const router=useRouter()
 
   useEffect(() => {
     setIsMounted(true);
@@ -26,7 +29,7 @@ export default function App({ Component, pageProps:{ session, ...pageProps } }) 
     {isMounted && onlyWidth <= 640 && <Brand />}
     </div>
    
-    <Component {...pageProps} />
+    <Component key={router.asPath} {...pageProps} />
     <Footer/>
     </SessionProvider>
   </ThemeProvider>

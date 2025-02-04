@@ -9,23 +9,21 @@ export default async function fetchFollowersFollowing (req, res) {
     try {
         const { username, reqType } = req.query;
 
+
         if (!username) {
             return res.status(400).json({ message: "Username is required" });
         }
 
         await connectDB();
         const { followers, following } = await User.findOne({ username: username }, { followers: 1, following: 1 });
-
         
-
 
         if (reqType === "followers") {
             const followersDetails = await User.find(
                 { _id: { $in: followers } }, 
                 { username: 1, _id: 1 }       
             );
-
-            console.log(followersDetails)
+            
 
             if (!followersDetails) {
                 return res.status(404).json({ message: "User not found" });
